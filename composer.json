@@ -3,7 +3,7 @@
     "description": "Pakettikauppa API implementation",
     "type": "library",
     "keywords": ["Pakettikauppa", "API"],
-    "homepage": "http://www.pakettikauppa.fi",
+    "homepage": "https://www.pakettikauppa.fi",
     "license": "MIT",
     "authors": [
         {
