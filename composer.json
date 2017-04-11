@@ -15,9 +15,6 @@
         "email": "integration@pakettikauppa.fi"
     },
     "minimum-stability": "dev",
-    "require": {
-        "guzzlehttp/guzzle": "^6.2"
-    },
     "autoload": {
         "psr-4": {
             "Pakettikauppa\\": "src/Pakettikauppa"
