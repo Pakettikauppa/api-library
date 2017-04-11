@@ -2,13 +2,12 @@
 
 namespace Pakettikauppa;
 
-use GuzzleHttp\Client as HttpClient;
-
 class Client
 {
     private $api_key;
     private $secret;
     private $base_uri;
+    private $user_agent = 'pk-client-lib/0.1';
 
     /**
      * Client constructor.
@@ -160,11 +159,7 @@ class Client
 
     private function doPost($url_action, $post_params = null, $body = null)
     {
-        $headers = array(
-            'User-Agent' => 'pk-client-lib/0.1'
-        );
-
-        $options = array();
+        $headers = array();
 
         if(is_array($post_params))
         {
@@ -178,20 +173,33 @@ class Client
 
             $post_params['hash'] = hash_hmac('sha256', join('&', $post_params), $this->secret);
 
-            $options['json'] = $post_params;
+            $post_data = http_build_query($post_params);
         }
-
-        $http_client = new HttpClient(array('base_uri' => $this->base_uri));
 
         if(!is_null($body)) {
-            $headers['Content-type'] = 'text/xml; charset=utf-8';
-            $options['body'] = $body;
+            $headers[] = 'Content-type: text/xml; charset=utf-8';
+            $post_data = $body;
+        } else {
+            $headers[] = 'Content-Type: application/x-www-form-urlencoded';
         }
 
-        $options['headers'] = $headers;
+        $options = array(
+                CURLOPT_POST            =>  1,
+                CURLOPT_HEADER          =>  0,
+                CURLOPT_URL             =>  $this->base_uri.$url_action,
+                CURLOPT_FRESH_CONNECT   =>  1,
+                CURLOPT_RETURNTRANSFER  =>  1,
+                CURLOPT_FORBID_REUSE    =>  1,
+                CURLOPT_USERAGENT       =>  $this->user_agent,
+                CURLOPT_TIMEOUT         =>  30,
+                CURLOPT_HTTPHEADER      =>  $headers,
+                CURLOPT_POSTFIELDS      =>  $post_data
+        );
+        
+        $ch = curl_init();
+        curl_setopt_array($ch, $options);
+        $response = curl_exec($ch);
 
-        $response = $http_client->request('POST', $url_action, $options);
-
-        return $response->getBody();
+        return $response;
     }
 }
