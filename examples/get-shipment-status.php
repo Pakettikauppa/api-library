@@ -12,11 +12,9 @@ require '../vendor/autoload.php';
 use Pakettikauppa\Client;
 
 
-$api_key        = '';
-$secret         = '';
-$tracking_code  = '';
+$tracking_code  = 'JJFITESTLABEL100';
 
-$client = new Client(array('api_key' => $api_key, 'secret' => $secret));
+$client = new Client(array('test_mode' => true));
 
 $result = $client->getShipmentStatus($tracking_code);
 
