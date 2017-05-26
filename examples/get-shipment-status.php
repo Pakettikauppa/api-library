@@ -1,7 +1,6 @@
 <?php
 /**
- * Lists tracking and general info about a shipment. Works only on production environment with real credentials.
- * Returns empty json object if tried in testing environment.
+ * Lists tracking and general info about a shipment.
  *
  */
 error_reporting(E_ALL|E_STRICT);
