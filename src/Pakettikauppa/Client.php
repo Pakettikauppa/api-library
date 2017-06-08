@@ -148,10 +148,10 @@ class Client
     public function searchPickupPoints($postcode, $street_address = null, $country = null, $service_provider = null)
     {
         $post_params = array(
-            'postcode'          => $postcode,
-            'address'           => $street_address,
-            'country'           => $country,
-            'service_provider'  => $service_provider
+            'postcode'          => "$postcode",
+            'address'           => "$street_address",
+            'country'           => "$country",
+            'service_provider'  => "$service_provider"
         );
 
         return $this->doPost('/pickup-points/search', $post_params);
