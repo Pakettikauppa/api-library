@@ -143,15 +143,17 @@ class Client
      * @param null $street_address
      * @param null $country
      * @param null $service_provider
+     * @param $limit
      * @return \Psr\Http\Message\StreamInterface
      */
-    public function searchPickupPoints($postcode, $street_address = null, $country = null, $service_provider = null)
+    public function searchPickupPoints($postcode, $street_address = null, $country = null, $service_provider = null, $limit = 5)
     {
         $post_params = array(
-            'postcode'          => "$postcode",
-            'address'           => "$street_address",
-            'country'           => "$country",
-            'service_provider'  => "$service_provider"
+            'postcode'          => (string) $postcode,
+            'address'           => (string) $street_address,
+            'country'           => (string) $country,
+            'service_provider'  => (string) $service_provider,
+            'limit'             => (int) $limit
         );
 
         return $this->doPost('/pickup-points/search', $post_params);
