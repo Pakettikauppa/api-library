@@ -145,7 +145,7 @@ class Client
      * @param string $street_address
      * @param string $country
      * @param string $service_provider Limits results for to certain providers possible values: Posti, Matkahuolto, Db Schenker.
-     * @param int $limit
+     * @param int $limit 1 - 15
      * @return mixed
      */
     public function searchPickupPoints($postcode = null, $street_address = null, $country = null, $service_provider = null, $limit = 5)
@@ -166,13 +166,15 @@ class Client
      *
      * @param $query_text Text containing the full address, for example: "Keskustori 1, 33100 Tampere"
      * @param string $service_provider $service_provider Limits results for to certain providers possible values: Posti, Matkahuolto, Db Schenker.
+     * @param int $limit 1 - 15
      * @return mixed
      */
-    public function searchPickupPointsByText($query_text, $service_provider = null)
+    public function searchPickupPointsByText($query_text, $service_provider = null, $limit = 5)
     {
         $post_params = array(
-            'query'             => "$query_text",
-            'service_provider'  => "$service_provider"
+            'query'             => (string) $query_text,
+            'service_provider'  => (string) $service_provider,
+            'limit'             => (int) $limit
         );
 
         return $this->doPost('/pickup-points/search', $post_params);
