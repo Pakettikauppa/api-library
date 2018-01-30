@@ -10,13 +10,13 @@ class SimpleXMLElement extends \SimpleXMLElement
    * @param string
    * @param string
    */
-  public function addChild($key, $value = null)
+  public function addChild($key, $value = null, $namespace = null)
   {
     if ( $value != null )
     {
       $value = htmlspecialchars($value, ENT_XML1);
     }
 
-    return parent::addChild($key, $value);
+    return parent::addChild($key, $value, $namespace);
   }
 }
