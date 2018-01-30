@@ -183,7 +183,7 @@ class Shipment
      */
     private function toXml()
     {
-        $xml = new \SimpleXMLElement('<eChannel/>');
+        $xml = new SimpleXMLElement('<eChannel/>');
 
         $routing = $xml->addChild('ROUTING');
         $routing->addChild("Routing.Time", time());
