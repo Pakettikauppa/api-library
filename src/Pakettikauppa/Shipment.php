@@ -179,7 +179,7 @@ class Shipment
     /**
      * Builds the xml from given data
      *
-     * @return \SimpleXMLElement
+     * @return SimpleXMLElement
      */
     private function toXml()
     {
