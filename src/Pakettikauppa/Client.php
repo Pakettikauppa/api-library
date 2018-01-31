@@ -7,7 +7,7 @@ class Client
     private $api_key;
     private $secret;
     private $base_uri;
-    private $user_agent = 'pk-client-lib/0.1';
+    private $user_agent = 'pk-client-lib/0.2';
 
     /**
      * Client constructor.
