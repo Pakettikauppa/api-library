@@ -72,7 +72,7 @@ class Client
         return true;
     }
 
-    /**
+    /**a
      * Fetches the shipping label pdf for a given Shipment and
      * saves it as base64 encoded string to $pdf parameter on the Shipment.
      * The shipment must have $tracking_code and $reference set.
@@ -113,13 +113,12 @@ class Client
         return true;
     }
 
-    /**a
-     * Fetches the shipping label pdf for a given Shipment and
-     * saves it as base64 encoded string to $pdf parameter on the Shipment.
-     * The shipment must have $tracking_code and $reference set.
+    /**
+     * Fetches the shipping labels in one pdf for a given tracking_codes and
+     * saves it as base64 encoded string inside XML.
      *
-     * @param Shipment $shipment
-     * @return bool
+     * @param array $trackingCodes
+     * @return xml
      * @throws \Exception
      */
     public function fetchShippingLabels($trackingCodes)
