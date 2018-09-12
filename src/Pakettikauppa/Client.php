@@ -113,6 +113,47 @@ class Client
         return true;
     }
 
+    /**a
+     * Fetches the shipping label pdf for a given Shipment and
+     * saves it as base64 encoded string to $pdf parameter on the Shipment.
+     * The shipment must have $tracking_code and $reference set.
+     *
+     * @param Shipment $shipment
+     * @return bool
+     * @throws \Exception
+     */
+    public function fetchShippingLabels($trackingCodes)
+    {
+        $id     = str_replace('.', '', microtime(true));
+        $xml    = new \SimpleXMLElement('<eChannel/>');
+
+        $routing = $xml->addChild('ROUTING');
+        $routing->addChild('Routing.Account', $this->api_key);
+        $routing->addChild('Routing.Id', $id);
+        $routing->addChild('Routing.Key', md5("{$this->api_key}{$id}{$this->secret}"));
+
+        $label = $xml->addChild('PrintLabel');
+        $label['responseFormat'] = 'File';
+
+        foreach($trackingCodes as $trackingCode) {
+            $label->addChild('TrackingCode', $trackingCode);
+        }
+
+        $response = $this->doPost('/prinetti/get-shipping-label', null, $xml->asXML());
+
+        $response_xml = @simplexml_load_string($response);
+
+        if(!$response_xml) {
+            throw new \Exception("Failed to load response xml");
+        }
+
+        if($response_xml->{'response.status'} != 0) {
+            throw new \Exception("Error: {$response_xml->{'response.status'}}, {$response_xml->{'response.message'}}");
+        }
+
+        return $response_xml;
+    }
+
     /**
      * @param $tracking_code
      * @return mixed
