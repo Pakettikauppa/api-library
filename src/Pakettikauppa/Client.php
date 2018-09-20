@@ -9,6 +9,7 @@ class Client
     private $base_uri;
     private $user_agent = 'pk-client-lib/0.2';
     private $comment = null;
+    private $response = null;
 
     /**
      * Client constructor.
@@ -80,6 +81,8 @@ class Client
             throw new \Exception("Failed to load response xml");
         }
 
+        $this->response = $response_xml;
+
         if($response_xml->{'response.status'} != 0) {
             throw new \Exception("Error: {$response_xml->{'response.status'}}, {$response_xml->{'response.message'}}");
         }
@@ -90,6 +93,14 @@ class Client
         return true;
     }
 
+    /**
+     * Returns latest response as XML
+     * 
+     * @return \SimpleXMLElement
+     */
+    public function getResponse() {
+        return $this->response;
+    }
     /**a
      * Fetches the shipping label pdf for a given Shipment and
      * saves it as base64 encoded string to $pdf parameter on the Shipment.
@@ -121,6 +132,8 @@ class Client
         if(!$response_xml) {
             throw new \Exception("Failed to load response xml");
         }
+
+        $this->response = $response_xml;
 
         if($response_xml->{'response.status'} != 0) {
             throw new \Exception("Error: {$response_xml->{'response.status'}}, {$response_xml->{'response.message'}}");
@@ -163,6 +176,8 @@ class Client
         if(!$response_xml) {
             throw new \Exception("Failed to load response xml");
         }
+
+        $this->response = $response_xml;
 
         if($response_xml->{'response.status'} != 0) {
             throw new \Exception("Error: {$response_xml->{'response.status'}}, {$response_xml->{'response.message'}}");
