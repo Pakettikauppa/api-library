@@ -8,6 +8,7 @@ class Client
     private $secret;
     private $base_uri;
     private $user_agent = 'pk-client-lib/0.2';
+    private $comment = null;
 
     /**
      * Client constructor.
@@ -33,10 +34,24 @@ class Client
 
             $this->api_key      = $params['api_key'];
             $this->secret       = $params['secret'];
-            $this->base_uri     = 'https://api.pakettikauppa.fi';
+
+            if(isset($params['base_uri'])) {
+                $this->base_uri = $params['base_uri'];
+            } else {
+                $this->base_uri = 'https://api.pakettikauppa.fi';
+            }
         }
     }
 
+    /**
+     * Sets comment for the request. You can set there information for Pakettikauppa. Like
+     * "Generated from Foobar platform"
+     *
+     * @param string $comment
+     */
+    public function setComment($comment) {
+        $this->comment = $comment;
+    }
     /**
      * Posts shipment data to Pakettikauppa, if request was successful
      * sets $reference and $tracking_code params to given shipment.
@@ -53,6 +68,9 @@ class Client
         $shipment_xml->{"ROUTING"}->{"Routing.Account"}     = $this->api_key;
         $shipment_xml->{"ROUTING"}->{"Routing.Id"}          = $id;
         $shipment_xml->{"ROUTING"}->{"Routing.Key"}         = md5("{$this->api_key}{$id}{$this->secret}");
+        if($this->comment != null) {
+            $shipment_xml->{"ROUTING"}->{"Routing.Comment"} = $this->comment;
+        }
 
         $response = $this->doPost('/prinetti/create-shipment', null, $shipment_xml->asXML());
 
