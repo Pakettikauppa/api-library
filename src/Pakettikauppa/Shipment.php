@@ -230,10 +230,10 @@ class Shipment
                 $additional_service = $consignment->addChild('Consignment.AdditionalService');
                 $additional_service->addChild('AdditionalService.ServiceCode', $service->getServiceCode());
 
-                foreach ($service->getSpecifiers() as $key => $value)
+                foreach ($service->getSpecifiers() as $nameValue)
                 {
-                    $specifier          = $additional_service->addChild('AdditionalService.Specifier', $value);
-                    $specifier['name']  = $key;
+                    $specifier          = $additional_service->addChild('AdditionalService.Specifier', $nameValue[1]);
+                    $specifier['name']  = $nameValue[0];
                 }
             }
         }
