@@ -122,7 +122,7 @@ class AdditionalService
         }
 
         if($this->service_code == 3143) {
-            if($this->getSpecifier('lqweight') === null or $this->specifier('lqcount') === null)
+            if($this->getSpecifier('lqweight') === null or $this->getSpecifier('lqcount') === null)
                 return false;
         }
 
