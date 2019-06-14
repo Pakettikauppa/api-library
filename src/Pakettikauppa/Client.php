@@ -7,9 +7,12 @@ class Client
     private $api_key;
     private $secret;
     private $base_uri;
-    private $user_agent = 'pk-client-lib/0.2';
+    private $user_agent = 'pk-client-lib/1.0';
     private $comment = null;
     private $response = null;
+
+    private $http_response_code;
+    private $http_error;
 
     /**
      * Client constructor.
@@ -185,6 +188,55 @@ class Client
 
         return $response_xml;
     }
+    /**
+     *  Fetches a cost estimation for a shipment from Pakettikauppa.
+     *  To get an estimation for a parcel the shipment must have shipping
+     *  method set and at least 1 parcel with weight. When estimating cargo sender
+     *  and receiver info should also be set.
+     *
+     *
+     */
+    public function estimateShippingCost(Shipment &$shipment)
+    {
+        $sender                 = $shipment->getSender();
+        $receiver               = $shipment->getReceiver();
+        $parcels                = $shipment->getParcels();
+        $additional_services    = $shipment->getAdditionalServices();
+
+        $shipment_data = array(
+            'sender' => array(
+                'postcode'  => $sender->getPostcode(),
+                'country'   => $sender->getCountry(),
+            ),
+            'receiver' => array(
+                'postcode'  => $receiver->getPostcode(),
+                'country'   => $receiver->getCountry(),
+            ),
+
+            'product_code'          => $shipment->getShippingMethod(),
+            'parcels'               => array(),
+            'additional_services'   => array()
+        );
+
+        foreach ($parcels as $parcel)
+        {
+            $shipment_data['parcels'][] = array(
+                'weight'    => $parcel->getWeight(),
+                'volume'    => $parcel->getVolume(),
+                'type'      => $parcel->getPackageType(),
+            );
+        }
+
+        foreach ($additional_services as $service)
+        {
+            $shipment_data['additional_services'][] = $service->getServiceCode();
+        }
+
+
+        $response =  $this->doPost('/shipment/estimate-price', ['shipment' => json_encode($shipment_data)]);
+
+        return $response;
+    }
 
     /**
      * @param $tracking_code
@@ -302,7 +354,11 @@ class Client
         
         $ch = curl_init();
         curl_setopt_array($ch, $options);
-        $response = curl_exec($ch);
+
+        $response                   = curl_exec($ch);
+        $this->http_response_code   = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $this->http_error           = curl_errno($ch);
+        curl_close($ch);
 
         return $response;
     }
