@@ -235,7 +235,7 @@ class Client
 
         $response =  $this->doPost('/shipment/estimate-price', ['shipment' => json_encode($shipment_data)]);
 
-        return $response;
+        return json_decode($response);
     }
 
     /**

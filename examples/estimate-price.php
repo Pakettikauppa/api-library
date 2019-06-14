@@ -49,7 +49,7 @@ $parcel->setPackageType('PU');
 
 
 $shipment = new Shipment();
-$shipment->setShippingMethod(2144); // shipping_method_code that you can get by using listShippingMethods()
+$shipment->setShippingMethod(2103); // shipping_method_code that you can get by using listShippingMethods()
 $shipment->setSender($sender);
 $shipment->setReceiver($receiver);
 $shipment->setShipmentInfo($info);
