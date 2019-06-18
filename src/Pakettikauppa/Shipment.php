@@ -77,9 +77,19 @@ class Shipment
         $this->additional_services[] = $additional_service;
     }
 
+    public function getAdditionalServices()
+    {
+        return $this->additional_services;
+    }
+
     public function addParcel(Parcel $parcel)
     {
         $this->parcels[] = $parcel;
+    }
+
+    public function getParcels()
+    {
+        return $this->parcels;
     }
 
     /**
@@ -98,9 +108,19 @@ class Shipment
         $this->sender = $sender;
     }
 
+    public function getSender()
+    {
+        return $this->sender;
+    }
+
     public function setReceiver(Receiver $receiver)
     {
         $this->receiver = $receiver;
+    }
+
+    public function getReceiver()
+    {
+        return $this->receiver;
     }
 
     public function setShipmentInfo(Info $info)
@@ -111,6 +131,11 @@ class Shipment
     public function setShippingMethod($shipping_method_code)
     {
         $this->shipping_method = $shipping_method_code;
+    }
+
+    public function getShippingMethod()
+    {
+        return $this->shipping_method;
     }
 
     /**
@@ -230,10 +255,10 @@ class Shipment
                 $additional_service = $consignment->addChild('Consignment.AdditionalService');
                 $additional_service->addChild('AdditionalService.ServiceCode', $service->getServiceCode());
 
-                foreach ($service->getSpecifiers() as $key => $value)
+                foreach ($service->getSpecifiers() as $nameValue)
                 {
-                    $specifier          = $additional_service->addChild('AdditionalService.Specifier', $value);
-                    $specifier['name']  = $key;
+                    $specifier          = $additional_service->addChild('AdditionalService.Specifier', $nameValue[1]);
+                    $specifier['name']  = $nameValue[0];
                 }
             }
         }
