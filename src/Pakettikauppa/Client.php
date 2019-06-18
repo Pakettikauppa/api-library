@@ -313,6 +313,37 @@ class Client
         return $this->doPost('/pickup-points/search', $post_params);
     }
 
+    /**
+     *
+     * Searches info about a single pickup point.
+     *
+     * @param string $point_id  is an id for a single pickup point. For example: 905253201
+     * @param  $service is used to identify service provider. It can shipping method code like '2103'
+     *          or name of the service provider: "Posti", "Matkahuolto" or "Db Schenker".
+     * @return string|null
+     */
+    public function getPickupPointInfo($point_id, $service)
+    {
+        if (empty($service) or empty($point_id))
+        {
+            return null;
+        }
+
+        $post_params = array(
+            'point_id'  => (string) $point_id,
+            'timestamp' => time()
+        );
+
+        if(is_numeric($service))
+        {
+            $post_params['service_code'] = $service;
+        }else {
+            $post_params['service_provider'] = $service;
+        }
+
+        return $this->doPost('/pickup-point/info', $post_params);
+    }
+
     private function doPost($url_action, $post_params = null, $body = null)
     {
         $headers = array();
