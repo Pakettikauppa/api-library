@@ -256,6 +256,15 @@ class Client
     }
 
     /**
+     * @param $postcode
+     *
+     * @return bool|string
+     */
+    public function findCityByPostcode($postcode, $country) {
+        return json_decode($this->doPost('/info/find-city', array('postcode' => $postcode, 'country' => $country)));
+    }
+
+    /**
      * @return mixed
      */
     public function listShippingMethods()
