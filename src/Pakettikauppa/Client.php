@@ -278,7 +278,7 @@ class Client
      * @param int $postcode
      * @param string $street_address
      * @param string $country
-     * @param string $service_provider Limits results for to certain providers possible values: Posti, Matkahuolto, Db Schenker.
+     * @param string $service_provider Limits results for to certain providers possible values are packet service codes (like 2103 for Postipaketti. Use listShippingMethods to get service codes).
      * @param int $limit 1 - 15
      * @return mixed
      */
