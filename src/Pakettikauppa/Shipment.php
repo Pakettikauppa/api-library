@@ -274,6 +274,12 @@ class Shipment
             $weight = $parcel_xml->addChild('Parcel.Weight', $parcel->getWeight());
             $volume = $parcel_xml->addChild('Parcel.Volume', $parcel->getVolume());
 
+            // x, y, z parcel dimensions in cm, used by courier services
+
+            $volume['x'] = $parcel->getX();
+            $volume['y'] = $parcel->getY();
+            $volume['z'] = $parcel->getZ();
+
             $weight['unit'] = 'kg';
             $volume['unit'] = 'm3';
 
