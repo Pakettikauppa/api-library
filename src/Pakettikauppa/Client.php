@@ -359,20 +359,16 @@ class Client
      * Only Posti shipments are supported for now.
      *
      * @param string $tracking_code
-     * @param string $service_provider
      *
      * @return mixed
      */
-    public function createActivationCode($tracking_code, $service_provider = "posti")
+    public function createActivationCode($tracking_code)
     {
         if (empty($tracking_code)) {
             return null;
         }
 
-        $post_params = array(
-            'tracking_code' => $tracking_code,
-            'service_provider' => $service_provider
-        );
+        $post_params = array('tracking_code' => $tracking_code);
 
         return $this->doPost('/shipment/create-activation-code', $post_params);
     }
