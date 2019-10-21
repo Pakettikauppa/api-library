@@ -353,6 +353,26 @@ class Client
         return $this->doPost('/pickup-point/info', $post_params);
     }
 
+    /**
+     *
+     * Creates an activation code (Helposti-koodi, aktivointikoodi) to shipment.
+     * Only Posti shipments are supported for now.
+     *
+     * @param string $tracking_code
+     *
+     * @return mixed
+     */
+    public function createActivationCode($tracking_code)
+    {
+        if (empty($tracking_code)) {
+            return null;
+        }
+
+        $post_params = array('tracking_code' => $tracking_code);
+
+        return $this->doPost('/shipment/create-activation-code', $post_params);
+    }
+
     private function doPost($url_action, $post_params = null, $body = null)
     {
         $headers = array();
