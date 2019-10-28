@@ -226,6 +226,7 @@ class Shipment
         $sender->addChild('Sender.Country', $this->sender->getCountry());
         $sender->addChild('Sender.Phone', $this->sender->getPhone());
         $sender->addChild('Sender.Vatcode', $this->sender->getVatcode());
+        $sender->addChild('Sender.Email', $this->sender->getEmail());
 
         $receiver = $shipment->addChild('Shipment.Recipient');
         $receiver->addChild('Recipient.Name1', $this->receiver->getName1());
