@@ -224,6 +224,9 @@ class Client
                 'weight'    => $parcel->getWeight(),
                 'volume'    => $parcel->getVolume(),
                 'type'      => $parcel->getPackageType(),
+                'x_dimension' => $parcel->getX(),
+                'y_dimension' => $parcel->getY(),
+                'z_dimension' => $parcel->getZ(),
             );
         }
 
