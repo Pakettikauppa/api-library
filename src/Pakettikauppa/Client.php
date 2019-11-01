@@ -66,6 +66,19 @@ class Client
      */
     public function createTrackingCode(Shipment &$shipment)
     {
+        $this->createShipment($shipment, false);
+
+        return true;
+    }
+
+    /**
+     * @param Shipment $shipment
+     * @param bool     $draft
+     *
+     * @throws \Exception
+     */
+    private function createShipment(Shipment &$shipment, $draft = false)
+    {
         $id             = str_replace('.', '', microtime(true));
         $shipment_xml   = $shipment->asSimpleXml();
 
@@ -76,7 +89,11 @@ class Client
             $shipment_xml->{"ROUTING"}->{"Routing.Comment"} = $this->comment;
         }
 
-        $response = $this->doPost('/prinetti/create-shipment', null, $shipment_xml->asXML());
+        if (!$draft) {
+            $response = $this->doPost('/prinetti/create-shipment', null, $shipment_xml->asXML());
+        } else {
+            $response = $this->doPost('/prinetti/create-shipment-draft', null, $shipment_xml->asXML());
+        }
 
         $response_xml = @simplexml_load_string($response);
 
@@ -90,10 +107,10 @@ class Client
             throw new \Exception("Error: {$response_xml->{'response.status'}}, {$response_xml->{'response.message'}}");
         }
 
+        $response_xml = $this->response;
+
         $shipment->setReference($response_xml->{'response.reference'});
         $shipment->setTrackingCode($response_xml->{'response.trackingcode'});
-
-        return true;
     }
 
     /**
@@ -151,7 +168,7 @@ class Client
      * Fetches the shipping labels in one pdf for a given tracking_codes and
      * saves it as base64 encoded string inside XML.
      *
-     * @param array $trackingCodes
+     * @param mixed $trackingCodes
      * @return xml
      * @throws \Exception
      */
@@ -168,6 +185,9 @@ class Client
         $label = $xml->addChild('PrintLabel');
         $label['responseFormat'] = 'File';
 
+        if (!is_array($trackingCodes)) {
+            $trackingCodes = [$trackingCodes];
+        }
         foreach($trackingCodes as $trackingCode) {
             $label->addChild('TrackingCode', $trackingCode);
         }
@@ -357,7 +377,6 @@ class Client
     }
 
     /**
-     *
      * Creates an activation code (Helposti-koodi, aktivointikoodi) to shipment.
      * Only Posti shipments are supported for now.
      *
@@ -374,6 +393,59 @@ class Client
         $post_params = array('tracking_code' => $tracking_code);
 
         return $this->doPost('/shipment/create-activation-code', $post_params);
+    }
+
+    /**
+     * Creates draft shipment that can be created as real shipment later.
+     *
+     * @param Shipment $shipment
+     *
+     * @return string uuid
+     * @throws \Exception
+     */
+    public function createShipmentDraft(Shipment &$shipment) {
+        $this->createShipment($shipment, true);
+
+        return $this->response->{'response.reference'}['uuid']->__toString();
+    }
+
+    /**
+     * Creates real shipment from the draft shipment.
+     *
+     * @param $uuid
+     *
+     * @return string tracking code
+     * @throws \Exception
+     */
+    public function confirmShipmentDraft($uuid)
+    {
+        $id     = str_replace('.', '', microtime(true));
+        $xml    = new \SimpleXMLElement('<eChannel/>');
+
+        $routing = $xml->addChild('ROUTING');
+        $routing->addChild('Routing.Account', $this->api_key);
+        $routing->addChild('Routing.Id', $id);
+        $routing->addChild('Routing.Key', md5("{$this->api_key}{$id}{$this->secret}"));
+
+        $label = $xml->addChild('ConfirmLabel');
+        $label->addChild('Reference');
+        $label->Reference['uuid'] = $uuid;
+
+        $response = $this->doPost('/prinetti/confirm-shipment-draft', null, $xml->asXML());
+
+        $response_xml = @simplexml_load_string($response);
+
+        if(!$response_xml) {
+            throw new \Exception("Failed to load response xml");
+        }
+
+        $this->response = $response_xml;
+
+        if($response_xml->{'response.status'} != 0) {
+            throw new \Exception("Error: {$response_xml->{'response.status'}}, {$response_xml->{'response.message'}}");
+        }
+
+        return $response_xml->{'response.trackingcode'}->__toString();
     }
 
     private function doPost($url_action, $post_params = null, $body = null)

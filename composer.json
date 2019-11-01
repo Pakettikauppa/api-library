@@ -19,5 +19,8 @@
         "psr-4": {
             "Pakettikauppa\\": "src/Pakettikauppa"
         }
-    }
+    },
+  "require": {
+    "ext-json": "*"
+  }
 }
