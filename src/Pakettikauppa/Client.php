@@ -25,6 +25,16 @@ class Client
             $this->api_key      = '00000000-0000-0000-0000-000000000000';
             $this->secret       = '1234567890ABCDEF';
             $this->base_uri     = 'https://apitest.pakettikauppa.fi';
+            
+            if(isset($params['api_key'])) {
+                $this->api_key = $params['api_key'];
+            }
+            if(isset($params['secret'])) {
+                $this->secret = $params['secret'];
+            }
+            if(isset($params['base_uri'])) {
+                $this->base_uri = $params['base_uri'];
+            }
         } else {
 
             if(!isset($params['api_key']))
