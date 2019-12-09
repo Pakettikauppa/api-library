@@ -21,6 +21,11 @@ use Pakettikauppa\Shipment\Receiver;
 class Shipment
 {
     /**
+     * @var string
+     */
+    private $uuid;
+
+    /**
      * @var Sender
      */
     private $sender;
@@ -70,6 +75,17 @@ class Shipment
         $this->additional_services  = array();
         $this->print_return_label   = false;
         $this->parcels              = array();
+        $this->uuid                 = null;
+    }
+
+    public function setUuid($uuid)
+    {
+        $this->uuid = $uuid;
+    }
+
+    public function getUuid()
+    {
+        return $this->uuid;
     }
 
     public function addAdditionalService(AdditionalService $additional_service)
@@ -214,6 +230,7 @@ class Shipment
         $routing->addChild("Routing.Time", time());
 
         $shipment = $xml->addChild('Shipment');
+        $shipment->addChild('Shipment.Uuid', $this->getUuid());
 
         $sender = $shipment->addChild('Shipment.Sender');
         $sender->addChild('Sender.Name1', $this->sender->getName1());
