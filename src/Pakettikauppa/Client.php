@@ -448,6 +448,25 @@ class Client
         return $response_xml->{'response.trackingcode'}->__toString();
     }
 
+    /**
+     * Returns an array where is carrier name, tracking code and uuid
+     * if shipment is created succesfully (and not cancelled or a draft)
+     *
+     *
+     * @param $uuid
+     * @return bool|string|null
+     */
+    public function getShipmentInfoByUuid($uuid)
+    {
+        if (empty($uuid)) {
+            return null;
+        }
+
+        $post_params = array('uuid' => $uuid);
+
+        return $this->doPost('/shipment/info', $post_params);
+    }
+
     private function doPost($url_action, $post_params = null, $body = null)
     {
         $headers = array();
@@ -466,7 +485,6 @@ class Client
 
             $post_data = http_build_query($post_params);
         }
-
         if(!is_null($body)) {
             $headers[] = 'Content-type: text/xml; charset=utf-8';
             $post_data = $body;
