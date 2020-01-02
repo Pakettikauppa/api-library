@@ -261,13 +261,15 @@ class Client
         return json_decode($response);
     }
 
+
     /**
      * @param $tracking_code
+     * @param string $lang
      * @return mixed
      */
-    public function getShipmentStatus($tracking_code)
+    public function getShipmentStatus($tracking_code, $lang = 'fi')
     {
-        return $this->doPost('/shipment/status', array('tracking_code' => $tracking_code));
+        return $this->doPost('/shipment/status', array('tracking_code' => $tracking_code, 'language' => $lang));
     }
 
     /**
