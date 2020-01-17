@@ -64,9 +64,9 @@ class Client
      * @return bool
      * @throws \Exception
      */
-    public function createTrackingCode(Shipment &$shipment)
+    public function createTrackingCode(Shipment &$shipment, $language = "fi")
     {
-        $this->createShipment($shipment, false);
+        $this->createShipment($shipment, false, $language);
 
         return true;
     }
@@ -77,7 +77,7 @@ class Client
      *
      * @throws \Exception
      */
-    private function createShipment(Shipment &$shipment, $draft = false)
+    private function createShipment(Shipment &$shipment, $draft = false, $language = "fi")
     {
         $id             = str_replace('.', '', microtime(true));
         $shipment_xml   = $shipment->asSimpleXml();
@@ -88,9 +88,8 @@ class Client
         if($this->comment != null) {
             $shipment_xml->{"ROUTING"}->{"Routing.Comment"} = $this->comment;
         }
-
         if (!$draft) {
-            $response = $this->doPost('/prinetti/create-shipment', null, $shipment_xml->asXML());
+            $response = $this->doPost("/prinetti/create-shipment?lang={$language}", null, $shipment_xml->asXML());
         } else {
             $response = $this->doPost('/prinetti/create-shipment-draft', null, $shipment_xml->asXML());
         }
