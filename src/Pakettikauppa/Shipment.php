@@ -21,11 +21,6 @@ use Pakettikauppa\Shipment\Receiver;
 class Shipment
 {
     /**
-     * @var string
-     */
-    private $language;
-
-    /**
      * @var Sender
      */
     private $sender;
@@ -205,21 +200,6 @@ class Shipment
         $this->reference = $reference;
     }
 
-    /**
-     * @return string
-     */
-    public function getLanguage()
-    {
-        return $this->language;
-    }
-
-    /**
-     * @param string $language
-     */
-    public function setLanguage($language)
-    {
-        $this->language = $language;
-    }
 
     /**
      * Builds the xml from given data
@@ -234,7 +214,6 @@ class Shipment
         $routing->addChild("Routing.Time", time());
 
         $shipment = $xml->addChild('Shipment');
-        $shipment->addChild('Shipment.Language', $this->getLanguage());
 
         $sender = $shipment->addChild('Shipment.Sender');
         $sender->addChild('Sender.Name1', $this->sender->getName1());
