@@ -268,7 +268,13 @@ class Client
      */
     public function getShipmentStatus($tracking_code, $lang = 'fi')
     {
-        return $this->doPost('/shipment/status', array('tracking_code' => $tracking_code, 'language' => $lang));
+        $response = json_decode($this->doPost('/shipment/status', array('tracking_code' => $tracking_code, 'language' => $lang)));
+
+        if (empty($response)) {
+            return null;
+        }
+
+        return $response;
     }
 
     /**
@@ -276,7 +282,7 @@ class Client
      */
     public function listAdditionalServices()
     {
-        return $this->doPost('/additional-services/list', array());
+        return json_decode($this->doPost('/additional-services/list', array()));
     }
 
     /**
@@ -293,7 +299,7 @@ class Client
      */
     public function listShippingMethods()
     {
-        return $this->doPost('/shipping-methods/list', array());
+        return json_decode($this->doPost('/shipping-methods/list', array()));
     }
 
     /**
@@ -305,11 +311,12 @@ class Client
      * @param string $service_provider Limits results for to certain providers possible values are packet service codes (like 2103 for Postipaketti. Use listShippingMethods to get service codes).
      * @param int $limit 1 - 15
      * @return mixed
+     * @throws \Exception
      */
     public function searchPickupPoints($postcode = null, $street_address = null, $country = null, $service_provider = null, $limit = 5)
     {
         if ( ($postcode == null && $street_address == null) || (trim($postcode) == '' && trim($street_address) == '') ) {
-            return '[]';
+            throw new \Exception("Error: Invalid postcode or street address");
         }
 
         $post_params = array(
@@ -320,7 +327,7 @@ class Client
             'limit'             => (int) $limit
         );
 
-        return $this->doPost('/pickup-points/search', $post_params);
+        return json_decode($this->doPost('/pickup-points/search', $post_params));
     }
 
     /**
@@ -330,11 +337,12 @@ class Client
      * @param string $service_provider $service_provider Limits results for to certain providers possible values: Posti, Matkahuolto, Db Schenker.
      * @param int $limit 1 - 15
      * @return mixed
+     * @throws \Exception
      */
     public function searchPickupPointsByText($query_text, $service_provider = null, $limit = 5)
     {
         if ( $query_text == null || trim($query_text) == '' ) {
-            return '[]';
+            throw new \Exception("Error: Invalid query text");
         }
 
         $post_params = array(
@@ -343,7 +351,7 @@ class Client
             'limit'             => (int) $limit
         );
 
-        return $this->doPost('/pickup-points/search', $post_params);
+        return json_decode($this->doPost('/pickup-points/search', $post_params));
     }
 
     /**
@@ -354,12 +362,12 @@ class Client
      * @param  $service is used to identify service provider. It can shipping method code like '2103'
      *          or name of the service provider: "Posti", "Matkahuolto" or "Db Schenker".
      * @return string|null
+     * @throws \Exception
      */
     public function getPickupPointInfo($point_id, $service)
     {
-        if (empty($service) or empty($point_id))
-        {
-            return null;
+        if (empty($service) or empty($point_id)) {
+            throw new \Exception("Error: Empty point id or service");
         }
 
         $post_params = array(
@@ -374,7 +382,7 @@ class Client
             $post_params['service_provider'] = $service;
         }
 
-        return $this->doPost('/pickup-point/info', $post_params);
+        return json_decode($this->doPost('/pickup-point/info', $post_params));
     }
 
     /**
@@ -384,16 +392,17 @@ class Client
      * @param string $tracking_code
      *
      * @return mixed
+     * @throws \Exception
      */
     public function createActivationCode($tracking_code)
     {
         if (empty($tracking_code)) {
-            return null;
+            throw new \Exception("Error: Empty tracking code");
         }
 
         $post_params = array('tracking_code' => $tracking_code);
 
-        return $this->doPost('/shipment/create-activation-code', $post_params);
+        return json_decode($this->doPost('/shipment/create-activation-code', $post_params));
     }
 
     /**
