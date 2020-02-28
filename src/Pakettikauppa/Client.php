@@ -332,8 +332,6 @@ class Client
                 CURLOPT_HTTPHEADER      =>  $headers,
                 CURLOPT_POSTFIELDS      =>  $post_data
         );
-
-        var_dump($body);
         
         $ch = curl_init();
         curl_setopt_array($ch, $options);
