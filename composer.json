@@ -2,7 +2,7 @@
     "name": "pakettikauppa/api-library",
     "description": "Pakettikauppa API implementation",
     "type": "library",
-    "keywords": ["Pakettikauppa", "API"],
+    "keywords": ["Pakettikauppa", "API", "Smartship", "Smartpost", "Posti", "Matkahuolto", "DB Schenker"],
     "homepage": "https://www.pakettikauppa.fi",
     "license": "MIT",
     "authors": [
