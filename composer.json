@@ -19,5 +19,10 @@
         "psr-4": {
             "Pakettikauppa\\": "src/Pakettikauppa"
         }
+    },
+    "require": {
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-simplexml": "*"
     }
 }
