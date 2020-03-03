@@ -412,7 +412,7 @@ class Client
     public function searchPickupPoints($postcode = null, $street_address = null, $country = null, $service_provider = null, $limit = 5)
     {
         if ( ($postcode == null && $street_address == null) || (trim($postcode) == '' && trim($street_address) == '') ) {
-            return array();
+            return json_decode(array());
         }
 
         $post_params = array(
@@ -437,7 +437,7 @@ class Client
     public function searchPickupPointsByText($query_text, $service_provider = null, $limit = 5)
     {
         if ( $query_text == null || trim($query_text) == '' ) {
-            return array();
+            return json_decode(array());
         }
 
         $post_params = array(
