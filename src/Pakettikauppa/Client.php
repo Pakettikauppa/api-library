@@ -136,7 +136,7 @@ class Client
             $this->posti_auth_url = 'https://oauth.barium.posti.com';
         }
 
-        return json_decode($this->getPostiToken($this->posti_auth_url ."/oauth/token?grant_type=client_credentials", $this->api_key, $this->secret), true);
+        return json_decode($this->getPostiToken($this->posti_auth_url ."/oauth/token?grant_type=client_credentials", $this->api_key, $this->secret));
     }
 
     /**
@@ -371,7 +371,7 @@ class Client
      */
     public function getShipmentStatus($tracking_code, $lang = 'fi')
     {
-        return json_decode($this->doPost('/shipment/status', array('tracking_code' => $tracking_code, 'language' => $lang)), true);
+        return json_decode($this->doPost('/shipment/status', array('tracking_code' => $tracking_code, 'language' => $lang)));
     }
 
     /**
@@ -379,7 +379,7 @@ class Client
      */
     public function listAdditionalServices()
     {
-        return json_decode($this->doPost('/additional-services/list', array()), true);
+        return json_decode($this->doPost('/additional-services/list', array()));
     }
 
     /**
@@ -396,7 +396,7 @@ class Client
      */
     public function listShippingMethods()
     {
-        return json_decode($this->doPost('/shipping-methods/list', array()), true);
+        return json_decode($this->doPost('/shipping-methods/list', array()));
     }
 
     /**
@@ -423,7 +423,7 @@ class Client
             'limit'             => (int) $limit
         );
 
-        return json_decode($this->doPost('/pickup-points/search', $post_params), true);
+        return json_decode($this->doPost('/pickup-points/search', $post_params));
     }
 
     /**
@@ -446,7 +446,7 @@ class Client
             'limit'             => (int) $limit
         );
 
-        return json_decode($this->doPost('/pickup-points/search', $post_params), true);
+        return json_decode($this->doPost('/pickup-points/search', $post_params));
     }
 
     /**
