@@ -125,7 +125,7 @@ class Client
      * in constructor uses test server. Cache the result until it expires.
      *
      * @see https://api.posti.fi/api-authentication.html
-     * @return mixed
+     * @return array
      */
     public function getToken()
     {
@@ -160,7 +160,7 @@ class Client
      * sets $reference and $tracking_code params to given shipment.
      *
      * @param Shipment $shipment
-     * @return bool
+     * @return string
      * @throws \Exception
      */
     public function createTrackingCode(Shipment &$shipment)
@@ -290,7 +290,7 @@ class Client
 
     /**
      * @param $tracking_code
-     * @return mixed
+     * @return array
      */
     public function getShipmentStatus($tracking_code)
     {
@@ -298,7 +298,7 @@ class Client
     }
 
     /**
-     * @return mixed
+     * @return array
      */
     public function listAdditionalServices()
     {
@@ -306,7 +306,7 @@ class Client
     }
 
     /**
-     * @return mixed
+     * @return array
      */
     public function listShippingMethods()
     {
@@ -321,12 +321,12 @@ class Client
      * @param string $country
      * @param string $service_provider Limits results for to certain providers possible values: Posti, Matkahuolto, Db Schenker.
      * @param int $limit 1 - 15
-     * @return mixed
+     * @return array
      */
     public function searchPickupPoints($postcode = null, $street_address = null, $country = null, $service_provider = null, $limit = 5)
     {
         if ( ($postcode == null && $street_address == null) || (trim($postcode) == '' && trim($street_address) == '') ) {
-            return '[]';
+            return array();
         }
 
         $post_params = array(
@@ -346,12 +346,12 @@ class Client
      * @param $query_text Text containing the full address, for example: "Keskustori 1, 33100 Tampere"
      * @param string $service_provider $service_provider Limits results for to certain providers possible values: Posti, Matkahuolto, Db Schenker.
      * @param int $limit 1 - 15
-     * @return mixed
+     * @return array
      */
     public function searchPickupPointsByText($query_text, $service_provider = null, $limit = 5)
     {
         if ( $query_text == null || trim($query_text) == '' ) {
-            return '[]';
+            return array();
         }
 
         $post_params = array(
