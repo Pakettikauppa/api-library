@@ -4,12 +4,48 @@ namespace Pakettikauppa;
 
 class Client
 {
-    private $api_key;
-    private $secret;
-    private $base_uri;
-    private $user_agent = 'pk-client-lib/1.0';
-    private $comment = null;
-    private $response = null;
+    /**
+     * @var array|null
+     */
+    private $configs            = null;
+
+    /**
+     * @var string|null
+     */
+    private $api_key            = null;
+    /**
+     * @var string|null
+     */
+    private $secret             = null;
+    /**
+     * @var string|null
+     */
+    private $base_uri           = null;
+    /**
+     * @var string
+     */
+    private $user_agent         = 'pk-client-lib/2.0';
+    /**
+     * @var null
+     */
+    private $comment            = null;
+    /**
+     * @var null
+     */
+    private $response           = null;
+
+    /**
+     * @var null
+     */
+    private $use_posti_auth     = null;
+    /**
+     * @var null
+     */
+    private $posti_auth_url     = null;
+    /**
+     * @var null
+     */
+    private $access_token       = null;
 
     private $http_response_code;
     private $http_error;
@@ -17,34 +53,100 @@ class Client
     /**
      * Client constructor.
      *
-     * Params must contain ['test_mode' => true] OR your api credentials ['api_key' => '', 'secret' => '']
+     * ```php
+     *      $client = new Client(array('test_mode' => true)); // Test mode
      *
-     * @param array $params
+     *      $client = new Client(array('api_key' => '123ABC...', 'secret' => 'ABC321...')); // Production mode
+     *
+     *      $client = new Client(array(
+     *              'test_config' => array('api_key' => '123ABC...', 'secret' => 'ABC321...', 'base_uri' => 'https://testserver'),
+     *              'staging_config' => array('api_key' => '123ABC...', 'secret' => 'ABC321...', 'base_uri' => 'https://apitest.pakettikauppa.fi'),
+     *          ),
+     *          'test_config'
+     *      );
+     *
+     *      $client = new Client(array(
+     *              'posti_configs' => array(
+     *                  'use_posti_auth' => true    // Changes authentication method to Posti OAuth 2.0 token
+     *                  'api_key' => 'ABC123',      // Posti OAuth username
+     *                  'secret' => 'ABC321...',    // Posti OAuth secret
+     *                  'base_uri' => ''            // Url to Posti server
+     *                  'posti_auth_url' => ''      // Url to Posti OAuth server
+     *              )
+     *          ),
+     *          'posti_configs'
+     *      );
+     * ```
+     *
+     * @param array $configs Accepted params are api_key, secret & base_uri.
+     * @param string $use_config If configs contains more then one possible configuration, $use_config defines which to use
      * @throws \Exception
      */
-    public function __construct(array $params)
+    public function __construct(array $configs = null, $use_config = null)
     {
-        if(isset($params['test_mode']) and $params['test_mode'] === true) {
+        $this->configs = $configs;
+
+        if( (isset($configs['test_mode']) and $configs['test_mode'] === true) or empty($configs))
+        {
             $this->api_key      = '00000000-0000-0000-0000-000000000000';
             $this->secret       = '1234567890ABCDEF';
             $this->base_uri     = 'https://apitest.pakettikauppa.fi';
-        } else {
+        }
+        else
+        {
 
-            if(!isset($params['api_key']))
-                throw new \Exception('Param api_key not set');
+            if(isset($configs['api_key'])) {
+                $this->api_key  = $configs['api_key'];
+            }
 
-            if(!isset($params['secret']))
-                throw new \Exception('Param secret not set');
+            if(isset($configs['secret'])) {
+                $this->secret   = $configs['secret'];
+            }
 
-            $this->api_key      = $params['api_key'];
-            $this->secret       = $params['secret'];
-
-            if(isset($params['base_uri'])) {
-                $this->base_uri = $params['base_uri'];
+            if(isset($configs['base_uri'])) {
+                $this->base_uri = $configs['base_uri'];
             } else {
                 $this->base_uri = 'https://api.pakettikauppa.fi';
             }
         }
+
+        if($use_config and isset($configs[$use_config]))
+        {
+            if(isset($this->configs[$use_config]))
+            {
+                foreach ($this->configs[$use_config] as $key => $value) {
+                    if(property_exists($this, $key)) {
+                        $this->{$key} = $value;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Fetches access token from Posti authentication service, if class param $posti_auth_url is not defined
+     * in constructor uses test server. Cache the result until it expires.
+     *
+     * @see https://api.posti.fi/api-authentication.html
+     * @return array
+     */
+    public function getToken()
+    {
+        if(empty($this->posti_auth_url)) {
+            $this->posti_auth_url = 'https://oauth.barium.posti.com';
+        }
+
+        return json_decode($this->getPostiToken($this->posti_auth_url ."/oauth/token?grant_type=client_credentials", $this->api_key, $this->secret));
+    }
+
+    /**
+     * Set the access token
+     *
+     * @param string $access_token
+     */
+    public function setAccessToken($access_token)
+    {
+        $this->access_token = $access_token;
     }
 
     /**
@@ -61,14 +163,12 @@ class Client
      * sets $reference and $tracking_code params to given shipment.
      *
      * @param Shipment $shipment
-     * @return bool
+     * @return string
      * @throws \Exception
      */
     public function createTrackingCode(Shipment &$shipment, $language = "fi")
     {
-        $this->createShipment($shipment, false, $language);
-
-        return true;
+        return $this->createShipment($shipment, false, $language);
     }
 
     /**
@@ -82,9 +182,22 @@ class Client
         $id             = str_replace('.', '', microtime(true));
         $shipment_xml   = $shipment->asSimpleXml();
 
-        $shipment_xml->{"ROUTING"}->{"Routing.Account"}     = $this->api_key;
         $shipment_xml->{"ROUTING"}->{"Routing.Id"}          = $id;
-        $shipment_xml->{"ROUTING"}->{"Routing.Key"}         = md5("{$this->api_key}{$id}{$this->secret}");
+
+        if($this->use_posti_auth === true)
+        {
+            if(empty($this->access_token)) {
+                throw new \Exception("Access token must be set");
+
+            }
+
+            $shipment_xml->{"ROUTING"}->{"Routing.Token"}       = $this->access_token;
+        } else {
+            $shipment_xml->{"ROUTING"}->{"Routing.Account"}     = $this->api_key;
+            $shipment_xml->{"ROUTING"}->{"Routing.Version"}     = 2;
+            $shipment_xml->{"ROUTING"}->{"Routing.Key"}         = hash_hmac('sha256',"{$this->api_key}{$id}", $this->secret);
+        }
+
         if($this->comment != null) {
             $shipment_xml->{"ROUTING"}->{"Routing.Comment"} = $this->comment;
         }
@@ -94,10 +207,10 @@ class Client
             $response = $this->doPost('/prinetti/create-shipment-draft', null, $shipment_xml->asXML());
         }
 
-        $response_xml = @simplexml_load_string($response);
+        $response_xml = simplexml_load_string($response);
 
         if(!$response_xml) {
-            throw new \Exception("Failed to load response xml");
+            throw new \Exception("Failed to load response xml: " .var_export($response, true));
         }
 
         $this->response = $response_xml;
@@ -110,6 +223,8 @@ class Client
 
         $shipment->setReference($response_xml->{'response.reference'});
         $shipment->setTrackingCode($response_xml->{'response.trackingcode'});
+
+        return $response_xml->{'response.trackingcode'};
     }
 
     /**
@@ -120,6 +235,7 @@ class Client
     public function getResponse() {
         return $this->response;
     }
+
     /**a
      * Fetches the shipping label pdf for a given Shipment and
      * saves it as base64 encoded string to $pdf parameter on the Shipment.
@@ -131,43 +247,18 @@ class Client
      */
     public function fetchShippingLabel(Shipment &$shipment)
     {
-        $id     = str_replace('.', '', microtime(true));
-        $xml    = new \SimpleXMLElement('<eChannel/>');
-
-        $routing = $xml->addChild('ROUTING');
-        $routing->addChild('Routing.Account', $this->api_key);
-        $routing->addChild('Routing.Id', $id);
-        $routing->addChild('Routing.Key', md5("{$this->api_key}{$id}{$this->secret}"));
-
-        $label = $xml->addChild('PrintLabel');
-        $label['responseFormat'] = 'File';
-        $label->addChild('Reference', $shipment->getReference());
-        $label->addChild('TrackingCode', $shipment->getTrackingCode());
-
-        $response = $this->doPost('/prinetti/get-shipping-label', null, $xml->asXML());
-
-        $response_xml = @simplexml_load_string($response);
-
-        if(!$response_xml) {
-            throw new \Exception("Failed to load response xml");
-        }
-
-        $this->response = $response_xml;
-
-        if($response_xml->{'response.status'} != 0) {
-            throw new \Exception("Error: {$response_xml->{'response.status'}}, {$response_xml->{'response.message'}}");
-        }
+        $response_xml = $this->fetchShippingLabels(array($shipment->getTrackingCode()));
 
         $shipment->setPdf($response_xml->{'response.file'});
 
-        return true;
+        return $response_xml->{'response.file'};
     }
 
     /**
      * Fetches the shipping labels in one pdf for a given tracking_codes and
      * saves it as base64 encoded string inside XML.
      *
-     * @param mixed $trackingCodes
+     * @param array $trackingCodes
      * @return xml
      * @throws \Exception
      */
@@ -177,9 +268,20 @@ class Client
         $xml    = new \SimpleXMLElement('<eChannel/>');
 
         $routing = $xml->addChild('ROUTING');
-        $routing->addChild('Routing.Account', $this->api_key);
+
         $routing->addChild('Routing.Id', $id);
-        $routing->addChild('Routing.Key', md5("{$this->api_key}{$id}{$this->secret}"));
+
+        if($this->use_posti_auth === true) {
+            if(empty($this->access_token)) {
+                throw new \Exception("Access token must be set");
+            }
+
+            $routing->addChild('Routing.Token', $this->access_token);
+        } else {
+            $routing->addChild('Routing.Account', $this->api_key);
+            $routing->addChild("Routing.Version", 2);
+            $routing->addChild("Routing.Key", hash_hmac('sha256',"{$this->api_key}{$id}", $this->secret));
+        }
 
         $label = $xml->addChild('PrintLabel');
         $label['responseFormat'] = 'File';
@@ -193,10 +295,10 @@ class Client
 
         $response = $this->doPost('/prinetti/get-shipping-label', null, $xml->asXML());
 
-        $response_xml = @simplexml_load_string($response);
+        $response_xml = simplexml_load_string($response);
 
         if(!$response_xml) {
-            throw new \Exception("Failed to load response xml");
+            throw new \Exception("Failed to load response xml: " . var_export($response, true));
         }
 
         $this->response = $response_xml;
@@ -263,20 +365,21 @@ class Client
 
     /**
      * @param $tracking_code
+     * @return array
      * @param string $lang
      * @return mixed
      */
     public function getShipmentStatus($tracking_code, $lang = 'fi')
     {
-        return $this->doPost('/shipment/status', array('tracking_code' => $tracking_code, 'language' => $lang));
+        return json_decode($this->doPost('/shipment/status', array('tracking_code' => $tracking_code, 'language' => $lang)));
     }
 
     /**
-     * @return mixed
+     * @return array
      */
     public function listAdditionalServices()
     {
-        return $this->doPost('/additional-services/list', array());
+        return json_decode($this->doPost('/additional-services/list', array()));
     }
 
     /**
@@ -289,11 +392,11 @@ class Client
     }
 
     /**
-     * @return mixed
+     * @return array
      */
     public function listShippingMethods()
     {
-        return $this->doPost('/shipping-methods/list', array());
+        return json_decode($this->doPost('/shipping-methods/list', array()));
     }
 
     /**
@@ -304,12 +407,12 @@ class Client
      * @param string $country
      * @param string $service_provider Limits results for to certain providers possible values are packet service codes (like 2103 for Postipaketti. Use listShippingMethods to get service codes).
      * @param int $limit 1 - 15
-     * @return mixed
+     * @return array
      */
     public function searchPickupPoints($postcode = null, $street_address = null, $country = null, $service_provider = null, $limit = 5)
     {
         if ( ($postcode == null && $street_address == null) || (trim($postcode) == '' && trim($street_address) == '') ) {
-            return '[]';
+            return array();
         }
 
         $post_params = array(
@@ -320,7 +423,7 @@ class Client
             'limit'             => (int) $limit
         );
 
-        return $this->doPost('/pickup-points/search', $post_params);
+        return json_decode($this->doPost('/pickup-points/search', $post_params));
     }
 
     /**
@@ -329,12 +432,12 @@ class Client
      * @param $query_text Text containing the full address, for example: "Keskustori 1, 33100 Tampere"
      * @param string $service_provider $service_provider Limits results for to certain providers possible values: Posti, Matkahuolto, Db Schenker.
      * @param int $limit 1 - 15
-     * @return mixed
+     * @return array
      */
     public function searchPickupPointsByText($query_text, $service_provider = null, $limit = 5)
     {
         if ( $query_text == null || trim($query_text) == '' ) {
-            return '[]';
+            return array();
         }
 
         $post_params = array(
@@ -343,7 +446,7 @@ class Client
             'limit'             => (int) $limit
         );
 
-        return $this->doPost('/pickup-points/search', $post_params);
+        return json_decode($this->doPost('/pickup-points/search', $post_params));
     }
 
     /**
@@ -449,6 +552,12 @@ class Client
         return $response_xml->{'response.trackingcode'}->__toString();
     }
 
+    /**
+     * @param $url_action
+     * @param null $post_params
+     * @param null $body
+     * @return bool|string
+     */
     private function doPost($url_action, $post_params = null, $body = null)
     {
         $headers = array();
@@ -490,10 +599,45 @@ class Client
         
         $ch = curl_init();
         curl_setopt_array($ch, $options);
-
-        $response                   = curl_exec($ch);
         $this->http_response_code   = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $this->http_error           = curl_errno($ch);
+        $response = curl_exec($ch);
+
+        return $response;
+    }
+
+    /**
+     *
+     * @param $url
+     * @param $user
+     * @param $secret
+     * @return bool|string
+     */
+    private function getPostiToken($url, $user, $secret)
+    {
+        $headers = array();
+
+        $headers[] = 'Accept: application/json';
+        $headers[] = 'Authorization: Basic ' .base64_encode("$user:$secret");
+
+        $options = array(
+            CURLOPT_POST            => 1,
+            CURLOPT_HEADER          => 0,
+            CURLOPT_URL             => $url,
+            CURLOPT_FRESH_CONNECT   => 1,
+            CURLOPT_RETURNTRANSFER  => 1,
+            CURLOPT_FORBID_REUSE    => 1,
+            CURLOPT_USERAGENT       => $this->user_agent,
+            CURLOPT_TIMEOUT         => 30,
+            CURLOPT_HTTPHEADER      => $headers,
+
+        );
+
+        $ch = curl_init();
+        curl_setopt_array($ch, $options);
+
+        $response                   = curl_exec($ch);
+
         curl_close($ch);
 
         return $response;

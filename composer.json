@@ -20,7 +20,9 @@
             "Pakettikauppa\\": "src/Pakettikauppa"
         }
     },
-  "require": {
-    "ext-json": "*"
-  }
+    "require": {
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-simplexml": "*"
+    }
 }

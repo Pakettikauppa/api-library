@@ -61,4 +61,4 @@ $client = new Client(array('test_mode' => true));
 
 $result = $client->estimateShippingCost($shipment);
 
-var_dump(json_decode($result));
+var_dump($result);
