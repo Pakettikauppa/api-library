@@ -564,15 +564,25 @@ class Client
 
         if(is_array($post_params))
         {
-            if(!isset($post_params['api_key']))
-                $post_params['api_key'] = $this->api_key;
+            if($this->use_posti_auth === true) {
+                if(empty($this->access_token)) {
+                    throw new \Exception("Access token must be set");
+                }
 
-            if(!isset($post_params['timestamp']))
-                $post_params['timestamp'] = time();
+                $post_params['token'] = $this->access_token;
+            } else {
+                if(!isset($post_params['api_key'])) {
+                    $post_params['api_key'] = $this->api_key;
+                }
+                
+                if(!isset($post_params['timestamp'])) {
+                    $post_params['timestamp'] = time();
+                }
+                
+                ksort($post_params);
 
-            ksort($post_params);
-
-            $post_params['hash'] = hash_hmac('sha256', join('&', $post_params), $this->secret);
+                $post_params['hash'] = hash_hmac('sha256', join('&', $post_params), $this->secret);
+            }
 
             $post_data = http_build_query($post_params);
         }
