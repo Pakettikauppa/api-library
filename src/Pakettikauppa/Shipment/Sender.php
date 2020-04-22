@@ -55,6 +55,11 @@ class Sender
     public $email;
 
     /**
+     * @var string
+     */
+    public $contractId;
+
+    /**
      * @return string
      */
     public function getName1()
@@ -230,5 +235,19 @@ class Sender
         return $this->email;
     }
 
+    /**
+     * @return string
+     */
+    public function getContractId()
+    {
+        return $this->contractId;
+    }
 
+    /**
+     * @param string $contractId
+     */
+    public function setContractId($contractId)
+    {
+        $this->contractId = $contractId;
+    }
 }
