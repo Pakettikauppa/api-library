@@ -629,6 +629,8 @@ class Client
 
         $headers[] = 'Accept: application/json';
         $headers[] = 'Authorization: Basic ' .base64_encode("$user:$secret");
+        $headers[] = 'Content-Length: 0';
+        $headers[] = 'Expect:';
 
         $options = array(
             CURLOPT_POST            => 1,
