@@ -47,7 +47,6 @@ class Client
      */
     private $access_token       = null;
 
-    private $http_response_code;
     private $http_error;
 
     /**
@@ -609,7 +608,6 @@ class Client
         
         $ch = curl_init();
         curl_setopt_array($ch, $options);
-        $this->http_response_code   = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $this->http_error           = curl_errno($ch);
         $response = curl_exec($ch);
 
