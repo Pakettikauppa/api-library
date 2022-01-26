@@ -50,6 +50,7 @@ class Client
     public $http_response_code;
     public $http_error;
     public $http_response;
+    public $http_request;
 
     /**
      * Client constructor.
@@ -202,6 +203,7 @@ class Client
         if($this->comment != null) {
             $shipment_xml->{"ROUTING"}->{"Routing.Comment"} = $this->comment;
         }
+
         if (!$draft) {
             $response = $this->doPost("/prinetti/create-shipment?lang={$language}", null, $shipment_xml->asXML());
         } else {
@@ -612,6 +614,7 @@ class Client
         curl_setopt_array($ch, $options);
         $response = curl_exec($ch);
 
+        $this->http_request         = $post_data;
         $this->http_response_code   = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $this->http_error           = curl_errno($ch);
         $this->http_response        = $response;
