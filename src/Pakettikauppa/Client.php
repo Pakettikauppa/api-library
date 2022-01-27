@@ -230,7 +230,7 @@ class Client
 
     /**
      * Returns latest response as XML
-     * 
+     *
      * @return \SimpleXMLElement
      */
     public function getResponse() {
@@ -243,7 +243,7 @@ class Client
      * The shipment must have $tracking_code and $reference set.
      *
      * @param Shipment $shipment
-     * @return bool
+     * @return string
      * @throws \Exception
      */
     public function fetchShippingLabel(Shipment &$shipment)
@@ -575,11 +575,11 @@ class Client
                 if(!isset($post_params['api_key'])) {
                     $post_params['api_key'] = $this->api_key;
                 }
-                
+
                 if(!isset($post_params['timestamp'])) {
                     $post_params['timestamp'] = time();
                 }
-                
+
                 ksort($post_params);
 
                 $post_params['hash'] = hash_hmac('sha256', join('&', $post_params), $this->secret);
@@ -607,7 +607,7 @@ class Client
                 CURLOPT_HTTPHEADER      =>  $headers,
                 CURLOPT_POSTFIELDS      =>  $post_data
         );
-        
+
         $ch = curl_init();
         curl_setopt_array($ch, $options);
         $response = curl_exec($ch);
