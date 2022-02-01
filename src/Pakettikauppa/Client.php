@@ -416,8 +416,8 @@ class Client
         }
 
         $post_params = array(
-            'postcode'          => (string) $postcode,
-            'address'           => (string) $street_address,
+            'postcode'          => (string) trim($postcode),
+            'address'           => (string) trim($street_address),
             'country'           => (string) $country,
             'service_provider'  => (string) $service_provider,
             'limit'             => (int) $limit
@@ -441,7 +441,7 @@ class Client
         }
 
         $post_params = array(
-            'query'             => (string) $query_text,
+            'query'             => (string) trim($query_text),
             'service_provider'  => (string) $service_provider,
             'limit'             => (int) $limit
         );
