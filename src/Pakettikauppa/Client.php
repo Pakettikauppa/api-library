@@ -209,12 +209,8 @@ class Client
             $shipment_xml->{"ROUTING"}->{"Routing.Comment"} = $this->comment;
         }
 
-        if (!$draft) {
-            $response = $this->doPost("/prinetti/create-shipment?lang={$language}", null, $shipment_xml->asXML());
-        } else {
-            $response = $this->doPost('/prinetti/create-shipment-draft', null, $shipment_xml->asXML());
-        }
-
+        $response = $this->doPost("/prinetti/create-shipment?lang={$language}", null, $shipment_xml->asXML());
+        
         $response_xml = simplexml_load_string($response);
 
         if(!$response_xml) {
@@ -515,59 +511,6 @@ class Client
         $post_params = array('tracking_code' => $tracking_code);
 
         return $this->doPost('/shipment/create-activation-code', $post_params);
-    }
-
-    /**
-     * Creates draft shipment that can be created as real shipment later.
-     *
-     * @param Shipment $shipment
-     *
-     * @return string uuid
-     * @throws \Exception
-     */
-    public function createShipmentDraft(Shipment &$shipment) {
-        $this->createShipment($shipment, true);
-
-        return $this->response->{'response.reference'}['uuid']->__toString();
-    }
-
-    /**
-     * Creates real shipment from the draft shipment.
-     *
-     * @param $uuid
-     *
-     * @return string tracking code
-     * @throws \Exception
-     */
-    public function confirmShipmentDraft($uuid)
-    {
-        $id     = str_replace('.', '', microtime(true));
-        $xml    = new \SimpleXMLElement('<eChannel/>');
-
-        $routing = $xml->addChild('ROUTING');
-        $routing->addChild('Routing.Account', $this->api_key);
-        $routing->addChild('Routing.Id', $id);
-        $routing->addChild('Routing.Key', md5("{$this->api_key}{$id}{$this->secret}"));
-
-        $label = $xml->addChild('ConfirmLabel');
-        $label->addChild('Reference');
-        $label->Reference['uuid'] = $uuid;
-
-        $response = $this->doPost('/prinetti/confirm-shipment-draft', null, $xml->asXML());
-
-        $response_xml = @simplexml_load_string($response);
-
-        if(!$response_xml) {
-            throw new \Exception("Failed to load response xml");
-        }
-
-        $this->response = $response_xml;
-
-        if($response_xml->{'response.status'} != 0) {
-            throw new \Exception("Error: {$response_xml->{'response.status'}}, {$response_xml->{'response.message'}}");
-        }
-
-        return $response_xml->{'response.trackingcode'}->__toString();
     }
 
     /**
