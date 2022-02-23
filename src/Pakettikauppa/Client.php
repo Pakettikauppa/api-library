@@ -52,6 +52,11 @@ class Client
     public $http_response;
     public $http_request;
 
+    /** @var \Closure null */
+    private $logClosure = null;
+    const LOG_LEVEL_ERROR = 1;
+    const LOG_LEVEL_DEBUG = 10;
+
     /**
      * Client constructor.
      *
@@ -563,6 +568,8 @@ class Client
      */
     private function doPost($url_action, $post_params = null, $body = null)
     {
+        $requestId = $this->randomId();
+
         $headers = array();
 
         if(is_array($post_params))
@@ -610,6 +617,13 @@ class Client
                 CURLOPT_POSTFIELDS      =>  $post_data
         );
 
+        $this->log(sprintf("Request: %s\nPOST %s\nHeaders\n%s\nData\n%s\n",
+          $requestId,
+          $this->base_uri.$url_action,
+          json_encode($headers),
+          json_encode($post_data)
+        ));
+        
         $ch = curl_init();
         curl_setopt_array($ch, $options);
         $response = curl_exec($ch);
@@ -618,6 +632,11 @@ class Client
         $this->http_response_code   = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $this->http_error           = curl_errno($ch);
         $this->http_response        = $response;
+
+        $this->log(sprintf("Response: %s\nData\n%s\n",
+          $requestId,
+          json_encode($response)
+        ));
 
         return $response;
     }
@@ -631,6 +650,7 @@ class Client
      */
     private function getPostiToken($url, $user, $secret)
     {
+        $requestId = $this->randomId();
         $headers = array();
 
         $headers[] = 'Accept: application/json';
@@ -654,10 +674,78 @@ class Client
         $ch = curl_init();
         curl_setopt_array($ch, $options);
 
+
+        $this->log(sprintf("Request: %s\nPOST %s\nHeaders\n%s\n",
+          $requestId,
+          $url,
+          json_encode($headers)
+        ));
+
         $response                   = curl_exec($ch);
+
+        $this->log(sprintf("Response: %s\nData\n%s\n",
+          $requestId,
+          json_encode($response)
+        ));
 
         curl_close($ch);
 
         return $response;
     }
+
+  /**
+   * @return ?\Closure
+   */
+  public function getLogClosure()
+  {
+    return $this->logClosure;
+  }
+
+  /**
+   * @param ?\Closure $logClosure
+   * @return static
+   * @throws \ReflectionException
+   */
+  public function setLogClosure($logClosure)
+  {
+    if (!(($logClosure instanceof \Closure) || $logClosure === null))
+    {
+      throw new \Exception('logClosure must be function or null');
+    }
+
+    $reflection = new \ReflectionFunction($logClosure);
+    if ($reflection->getNumberOfParameters() !== 2)
+    {
+      throw new \Exception('Function should have two parameters: message and level.');
+    }
+
+    $this->logClosure = $logClosure;
+    return $this;
+  }
+
+  public function log($message, $level = self::LOG_LEVEL_DEBUG)
+  {
+    if ($this->getLogClosure() instanceof \Closure)
+    {
+      call_user_func($this->getLogClosure(), $message, $level);
+    }
+    return $this;
+  }
+
+  public function logError($message)
+  {
+    return $this->log($message, self::LOG_LEVEL_ERROR);
+  }
+
+  public function randomId()
+  {
+    if (function_exists('openssl_random_pseudo_bytes'))
+    {
+      $data = openssl_random_pseudo_bytes(16);
+      $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
+      $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
+      return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+    }
+    return uniqid('ID-');
+  }
 }
