@@ -407,9 +407,10 @@ class Client
      * @param string $country
      * @param string $service_provider Limits results for to certain providers possible values are packet service codes (like 2103 for Postipaketti. Use listShippingMethods to get service codes).
      * @param int $limit 1 - 15
+     * @param string $type PRIVATE_LOCKER, PICKUP_POINT, PARCEL_LOCKER, OUTDOOR_LOCKER, AGENCY
      * @return array
      */
-    public function searchPickupPoints($postcode = null, $street_address = null, $country = null, $service_provider = null, $limit = 5)
+    public function searchPickupPoints($postcode = null, $street_address = null, $country = null, $service_provider = null, $limit = 5, $type = null)
     {
         if ( ($postcode == null && $street_address == null) || (trim($postcode) == '' && trim($street_address) == '') ) {
             return array();
@@ -422,7 +423,11 @@ class Client
             'service_provider'  => (string) $service_provider,
             'limit'             => (int) $limit
         );
-
+        
+        if ( $type !== null ) {
+            $post_params['type'] = $type;
+        }
+        
         return json_decode($this->doPost('/pickup-points/search', $post_params));
     }
 
@@ -432,9 +437,10 @@ class Client
      * @param $query_text Text containing the full address, for example: "Keskustori 1, 33100 Tampere"
      * @param string $service_provider $service_provider Limits results for to certain providers possible values: Posti, Matkahuolto, Db Schenker.
      * @param int $limit 1 - 15
+     * @param string $type PRIVATE_LOCKER, PICKUP_POINT, PARCEL_LOCKER, OUTDOOR_LOCKER, AGENCY
      * @return array
      */
-    public function searchPickupPointsByText($query_text, $service_provider = null, $limit = 5)
+    public function searchPickupPointsByText($query_text, $service_provider = null, $limit = 5, $type = null)
     {
         if ( $query_text == null || trim($query_text) == '' ) {
             return array();
@@ -445,6 +451,10 @@ class Client
             'service_provider'  => (string) $service_provider,
             'limit'             => (int) $limit
         );
+        
+        if ( $type !== null ) {
+            $post_params['type'] = $type;
+        }
 
         return json_decode($this->doPost('/pickup-points/search', $post_params));
     }
