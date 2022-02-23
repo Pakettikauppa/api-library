@@ -425,7 +425,7 @@ class Client
         );
         
         if ( $type !== null ) {
-            $post_params['type'] = $type;
+            $post_params['type'] = (string) trim($type);
         }
         
         return json_decode($this->doPost('/pickup-points/search', $post_params));
@@ -453,7 +453,7 @@ class Client
         );
         
         if ( $type !== null ) {
-            $post_params['type'] = $type;
+            $post_params['type'] = (string) trim($type);
         }
 
         return json_decode($this->doPost('/pickup-points/search', $post_params));
