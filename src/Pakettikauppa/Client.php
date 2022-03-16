@@ -186,6 +186,10 @@ class Client
      */
     private function createShipment(Shipment &$shipment, $draft = false, $language = "fi")
     {
+        if($draft) {
+            throw new \Exception("Creating draft shipment is deprecated");
+        }
+        
         $id             = str_replace('.', '', microtime(true));
         $shipment_xml   = $shipment->asSimpleXml();
 
