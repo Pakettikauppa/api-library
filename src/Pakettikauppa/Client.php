@@ -249,9 +249,9 @@ class Client
      * @return string
      * @throws \Exception
      */
-    public function fetchShippingLabel(Shipment &$shipment)
+    public function fetchShippingLabel(Shipment &$shipment, $size = null, $labels_count = null, $cn23_count = null)
     {
-        $response_xml = $this->fetchShippingLabels(array($shipment->getTrackingCode()));
+        $response_xml = $this->fetchShippingLabels(array($shipment->getTrackingCode()), $size , $labels_count, $cn23_count);
 
         $shipment->setPdf($response_xml->{'response.file'});
 
@@ -266,7 +266,7 @@ class Client
      * @return xml
      * @throws \Exception
      */
-    public function fetchShippingLabels($trackingCodes, $size = '', $labels_count = 0, $cn23_count = 0)
+    public function fetchShippingLabels($trackingCodes, $size = null, $labels_count = null, $cn23_count = null)
     {
         $id     = str_replace('.', '', microtime(true));
         $xml    = new \SimpleXMLElement('<eChannel/>');
@@ -294,9 +294,15 @@ class Client
             $label['size'] = $size;
         }
         
-        if ($labels_count && $cn23_count) {
-            $label['combine'] = 'true';
-            $label['rules'] = "label:{$labels_count}%cn23:{$cn23_count}";
+        $rules = array();
+        if ($labels_count !== null) {
+            $rules[] = "label:{$labels_count}";
+        }
+        if ($cn23_count !== null) {
+            $rules[] = "cn23:{$cn23_count}";
+        }
+        if (!empty($rules)) {
+            $label['rules'] = implode('%', $rules);
         }
 
         if (!is_array($trackingCodes)) {
