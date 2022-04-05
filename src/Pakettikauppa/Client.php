@@ -266,7 +266,7 @@ class Client
      * @return xml
      * @throws \Exception
      */
-    public function fetchShippingLabels($trackingCodes, $labels_count = 0, $cn23_count = 0)
+    public function fetchShippingLabels($trackingCodes, $size = '', $labels_count = 0, $cn23_count = 0)
     {
         $id     = str_replace('.', '', microtime(true));
         $xml    = new \SimpleXMLElement('<eChannel/>');
@@ -289,6 +289,11 @@ class Client
 
         $label = $xml->addChild('PrintLabel');
         $label['responseFormat'] = 'File';
+        
+        if ($size && in_array($size, ['A5', '107x225'])) {
+            $label['size'] = $size;
+        }
+        
         if ($labels_count && $cn23_count) {
             $label['combine'] = 'true';
             $label['rules'] = "label:{$labels_count}%cn23:{$cn23_count}";
