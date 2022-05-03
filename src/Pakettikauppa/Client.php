@@ -253,9 +253,9 @@ class Client
      * @return string
      * @throws \Exception
      */
-    public function fetchShippingLabel(Shipment &$shipment)
+    public function fetchShippingLabel(Shipment &$shipment, $size = null, $labels_count = null, $cn23_count = null)
     {
-        $response_xml = $this->fetchShippingLabels(array($shipment->getTrackingCode()));
+        $response_xml = $this->fetchShippingLabels(array($shipment->getTrackingCode()), $size , $labels_count, $cn23_count);
 
         $shipment->setPdf($response_xml->{'response.file'});
 
@@ -270,7 +270,7 @@ class Client
      * @return xml
      * @throws \Exception
      */
-    public function fetchShippingLabels($trackingCodes)
+    public function fetchShippingLabels($trackingCodes, $size = null, $labels_count = null, $cn23_count = null)
     {
         $id     = str_replace('.', '', microtime(true));
         $xml    = new \SimpleXMLElement('<eChannel/>');
@@ -293,6 +293,21 @@ class Client
 
         $label = $xml->addChild('PrintLabel');
         $label['responseFormat'] = 'File';
+        
+        if ($size && in_array($size, ['A5', '107x225'])) {
+            $label['size'] = $size;
+        }
+        
+        $rules = array();
+        if ($labels_count !== null) {
+            $rules[] = "label:{$labels_count}";
+        }
+        if ($cn23_count !== null) {
+            $rules[] = "cn23:{$cn23_count}";
+        }
+        if (!empty($rules)) {
+            $label['rules'] = implode('%', $rules);
+        }
 
         if (!is_array($trackingCodes)) {
             $trackingCodes = [$trackingCodes];
