@@ -50,7 +50,7 @@ class Client
     /**
      * @var string max of 14 chars
      */
-    private $sender_system_name;
+    private $sender_system_name = null;
 
     public $http_response_code;
     public $http_error;
