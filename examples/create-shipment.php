@@ -54,6 +54,7 @@ $shipment->addParcel($parcel);
 $shipment->addAdditionalService($additional_service);
 
 $client = new Client(array('test_mode' => true));
+$client->setSenderSystemName('ExampleStore');
 
 try {
     if ($client->createTrackingCode($shipment)) {
